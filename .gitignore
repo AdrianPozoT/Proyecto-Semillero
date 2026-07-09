@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+vectorstores/*/
+!vectorstores/*/.gitkeep
+registro_oportunidades.txt
+recibo*.png
+.pytest_cache/
+README_INTERNO.md
