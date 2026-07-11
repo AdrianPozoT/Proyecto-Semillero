@@ -16,33 +16,40 @@ from src import config
 
 
 def chunkear_por_seccion(texto: str) -> list[str]:
-    """Divide el texto en un chunk por seccion numerada de nivel 1 (1., 2., ...).
-
-    TODO: portar la funcion que ya tenian funcionando. Recordatorio del
-    patron (igual al taller 5 / practica 6):
-    - buscar las cabeceras con una regex tipo r"^\\d+\\.\\s" en modo MULTILINE
-    - cada chunk va desde una cabecera hasta el inicio de la siguiente
-    """
-    raise NotImplementedError
+    """Divide el texto en un chunk por seccion numerada de nivel 1 (1., 2., ...)."""
+    patron = re.compile(r"^\d+\.\s", re.MULTILINE)
+    posiciones = [m.start() for m in patron.finditer(texto)]
+    
+    if not posiciones: 
+        return [texto.shrip()]  # Si no hay secciones numeradas, devolvemos el texto completo como un solo chunk.
+    
+    chunks = []
+    for i, inicio in enumerate(posiciones):
+        fin = posiciones[i + 1] if i + 1 < len(posiciones) else len(texto)
+        chunk = texto[inicio:fin].strip()
+        if chunk:  # Solo agregamos el chunk si no está vacío
+            chunks.append(chunk)
+    return chunks
+    
 
 
 def construir_indice(nombre_agente: str, ruta_documento) -> None:
-    """Chunkea, embebe y guarda en Chroma el indice de un agente.
-
-    TODO:
-    1. Leer el archivo de texto (ruta_documento.read_text(encoding="utf-8")).
-    2. chunks = chunkear_por_seccion(texto)
-    3. embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
-    4. Chroma.from_texts(
-           texts=chunks,
-           embedding=embeddings,
-           metadatas=[{"seccion": i, "fuente": ruta_documento.name} for i in range(len(chunks))],
-           collection_name=nombre_agente,
-           persist_directory=str(config.VECTORSTORE_DIR / nombre_agente),
-       )
-    5. Imprimir cuantos chunks se generaron (para verificar en consola).
-    """
-    raise NotImplementedError
+    """Chunkea, embebe y guarda en Chroma el indice de un agente."""
+    
+    texto = ruta_documento.read_text(encoding="utf-8")
+    chunks = chunkear_por_seccion(texto)
+    embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
+    Chroma.from_texts(
+        texts=chunks,
+        embedding=embeddings,
+        metadatas=[
+            {"seccion": i, "fuente": ruta_documento.name} for i in range(len(chunks))
+        ],
+        collection_name=nombre_agente,
+        persist_directory=str(config.VECTORSTORE_DIR / nombre_agente),
+    )
+    print(f"  -> {len(chunks)} chunks generados para '{nombre_agente}'.")
+    
 
 
 def main():
