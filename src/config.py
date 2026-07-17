@@ -15,7 +15,7 @@ DATA_DIR = BASE_DIR / "data"
 VECTORSTORE_DIR = BASE_DIR / "vectorstores"
 
 # Modelos Gemini 
-MODELO_LLM = "gemini-2.5-flash"
+MODELO_LLM = "gemini-3.1-flash-lite"
 MODELO_EMBEDDING = "gemini-embedding-001"
 
 #API Key 
