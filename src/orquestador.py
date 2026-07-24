@@ -99,14 +99,15 @@ def consultar(pregunta: str, ruta_imagen: str | None = None, thread_id: str | No
         resultado = orquestador.invoke(
             {"messages": [{"role": "user", "content": mensaje_usuario}]}, cfg
         )
-        resultado["thread_id"] = thread_id
+        resultado["thread_id"] = thread_id 
         return resultado
     except Exception as e:
         error_msg = f"Lo siento, estoy experimentando problemas técnicos temporales para procesar tu consulta. (Detalle técnico: {str(e)})"
+    
         mensaje_simulado = SimpleNamespace(content=error_msg)
         return {
             "messages": [mensaje_simulado],
-            "thread_id": thread_id
+            "thread_id": thread_id  
         }
 
 

@@ -12,21 +12,50 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 
 from src import config
 
-# TODO: instanciar embeddings, vectorstore (collection_name="politicas"),
-# retriever y llm, igual que en catalogo_tools.py.
 
-SYSTEM_PROMPT = """TODO: reglas estrictas para el agente de politicas
-comerciales (descuentos por nivel de autorizacion, condiciones de credito,
-garantias, devoluciones). No inventar, citar seccion, decir cuando no hay
-informacion suficiente.
+embedding = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
+vectorstore = Chroma(
+    persist_directory=str(config.VECTORSTORE_DIR / "politicas"),
+    embedding_function=embedding,
+    collection_name="politicas",
+)
+retriever = vectorstore.as_retriever(search_kwargs={"k": config.TOP_K})
+llm = ChatGoogleGenerativeAI(model=config.MODELO_LLM, temperature=0)
+
+
+SYSTEM_PROMPT = """Eres el Agente de Políticas Comerciales, Crédito y Cobranzas de Patito S.A.
+
+Tu función es responder consultas sobre:
+- Descuentos por nivel de autorización (Nivel 1 a Nivel 5).
+- Condiciones de crédito y plazos de pago.
+- Proceso de cobranzas y morosidad.
+- Devoluciones y garantías.
+
+Reglas de respuesta:
+- Cita siempre la sección del documento de donde proviene la información.
+- No inventes precios, descuentos ni condiciones que no estén explícitos en el contexto.
+- Si la información no está en el contexto, responde textualmente:
+  "No encontré información suficiente en la base documental proporcionada."
+- Sé conciso y técnico. Evita lenguaje comercial o de venta.
 """
 
 
 @tool
 def consultar_politicas(pregunta: str) -> str:
     """Responde preguntas sobre descuentos autorizados, condiciones de
-    credito, garantias y devoluciones de Patito S.A.
+    credito, garantias y devoluciones de Patito S.A."""
+    docs = retriever.invoke(pregunta)
+    
+    if not docs:
+        return "No encontré información suficiente en la base documental proporcionada."
+    
+    contexto = "\n\n".join(d.page_content for d in docs)
+    
+    mensajes = [
+        ("system", SYSTEM_PROMPT),
+        ("user", f"CONTEXTO:\n{contexto}\n\nPREGUNTA: {pregunta}"),
+    ]
+    
+    respuesta = llm.invoke(mensajes)
+    return respuesta.content
 
-    TODO: mismo pipeline que consultar_catalogo en catalogo_tools.py.
-    """
-    raise NotImplementedError

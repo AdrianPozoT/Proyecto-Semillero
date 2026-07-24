@@ -21,7 +21,7 @@ def chunkear_por_seccion(texto: str) -> list[str]:
     posiciones = [m.start() for m in patron.finditer(texto)]
     
     if not posiciones: 
-        return [texto.shrip()]  # Si no hay secciones numeradas, devolvemos el texto completo como un solo chunk.
+        return [texto.strip()]  # Si no hay secciones numeradas, devolvemos el texto completo como un solo chunk.
     
     chunks = []
     for i, inicio in enumerate(posiciones):

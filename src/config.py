@@ -16,6 +16,7 @@ VECTORSTORE_DIR = BASE_DIR / "vectorstores"
 
 # Modelos Gemini 
 MODELO_LLM = "gemini-3.1-flash-lite"
+MODELO_EMBEDDING = "gemini-embedding-001"
 
 #API Key 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
