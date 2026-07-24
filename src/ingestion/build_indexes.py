@@ -32,24 +32,26 @@ def chunkear_por_seccion(texto: str) -> list[str]:
     return chunks
     
 
-
 def construir_indice(nombre_agente: str, ruta_documento) -> None:
     """Chunkea, embebe y guarda en Chroma el indice de un agente."""
     
     texto = ruta_documento.read_text(encoding="utf-8")
     chunks = chunkear_por_seccion(texto)
     embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
+
+    metadatas = []
+    for chunk in chunks:
+        titulo_seccion = chunk.split("\n")[0].strip()
+        metadatas.append({"seccion": titulo_seccion, "fuente": ruta_documento.name})
+
     Chroma.from_texts(
         texts=chunks,
         embedding=embeddings,
-        metadatas=[
-            {"seccion": i, "fuente": ruta_documento.name} for i in range(len(chunks))
-        ],
+        metadatas=metadatas,
         collection_name=nombre_agente,
         persist_directory=str(config.VECTORSTORE_DIR / nombre_agente),
     )
     print(f"  -> {len(chunks)} chunks generados para '{nombre_agente}'.")
-    
 
 
 def main():
