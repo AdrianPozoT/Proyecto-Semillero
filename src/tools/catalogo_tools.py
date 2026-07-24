@@ -13,12 +13,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 
 from src import config
 
-
 embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
 vectorstore = Chroma(
-persist_directory=str(config.VECTORSTORE_DIR / "catalogo"),
-embedding_function=embeddings,
-collection_name="catalogo",
+    persist_directory=str(config.VECTORSTORE_DIR / "catalogo"),
+    embedding_function=embeddings,
+    collection_name="catalogo",
 )
 retriever = vectorstore.as_retriever(search_kwargs={"k": config.TOP_K})
 llm = ChatGoogleGenerativeAI(model=config.MODELO_LLM, temperature=0)
@@ -40,14 +39,10 @@ Reglas estrictas:
 def consultar_catalogo(pregunta: str) -> str:
     """Responde preguntas sobre productos, especificaciones, disponibilidad
     y precios de lista del catalogo de Patito S.A."""
-
-
     docs = retriever.invoke(pregunta)
-    #Guardia en código por siu docs está vacio, cortamos aqui: 
     if not docs:
         return "No encontré información suficiente en la base documental proporcionada."    
     
-    #Caso en que el retriever devuelve documentos, construimos el contexto y llamamos al LLM
     contexto = "\n\n".join(d.page_content for d in docs)
     
     mensajes = [
@@ -57,4 +52,3 @@ def consultar_catalogo(pregunta: str) -> str:
     
     respuesta = llm.invoke(mensajes)
     return respuesta.content
-
