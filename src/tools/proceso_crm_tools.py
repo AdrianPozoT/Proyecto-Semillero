@@ -12,21 +12,47 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 
 from src import config
 
-# TODO: instanciar embeddings, vectorstore (collection_name="proceso_crm"),
-# retriever y llm, igual que en catalogo_tools.py.
+embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
+vectorstore = Chroma(
+    persist_directory=str(config.VECTORSTORE_DIR / "proceso_crm"),
+    embedding_function=embeddings,
+    collection_name="proceso_crm",
+)
+retriever = vectorstore.as_retriever(search_kwargs={"k": config.TOP_K})
+llm = ChatGoogleGenerativeAI(model=config.MODELO_LLM, temperature=0)
 
-SYSTEM_PROMPT = """TODO: reglas estrictas para el agente de proceso de
-venta y CRM (etapas del embudo, registro en CRM, requisitos para marcar
-una oportunidad como ganada). No inventar, citar seccion, decir cuando no
-hay informacion suficiente.
+SYSTEM_PROMPT = """Eres el Agente de Proceso de Venta y CRM de Patito S.A.
+
+Reglas estrictas:
+- Responde ÚNICAMENTE con base en el CONTEXTO entregado. No uses conocimiento externo.
+- Si el CONTEXTO no contiene información suficiente para responder, di exactamente:
+  "No encontré información suficiente en la base documental proporcionada."
+- Cuando cites un dato (precio, disponibilidad, característica), indica de qué
+  sección o línea de producto proviene (ej. "según Línea Patito Pro").
+- Sé breve y directo. No agregues opiniones ni recomendaciones de venta.
+- No inventes precios, modelos ni condiciones que no aparezcan en el CONTEXTO.
 """
-
 
 @tool
 def consultar_proceso_crm(pregunta: str) -> str:
     """Responde preguntas sobre etapas del embudo, registro en el CRM y
     requisitos para cerrar una venta en Patito S.A.
-
-    TODO: mismo pipeline que consultar_catalogo en catalogo_tools.py.
     """
-    raise NotImplementedError
+    docs = retriever.invoke(pregunta)
+    #Guardia en código por siu docs está vacio, cortamos aqui:
+    if not docs:
+        return "No encontré información suficiente en la base documental proporcionada."
+    
+    #Caso en que el retriever devuelve documentos, construimos el contexto y llamamos al LLM
+    contexto = "\n\n".join(d.page_content for d in docs)
+    
+    mensajes = [
+        ("system", SYSTEM_PROMPT),
+        ("user", f"CONTEXTO:\n{contexto}\n\nPREGUNTA: {pregunta}"),
+    ]
+    
+    respuesta = llm.invoke(mensajes)
+    return respuesta.content
+    
+
+
