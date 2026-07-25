@@ -1,6 +1,10 @@
 """
 Configuracion global del proyecto Patito S.A.
-Carga variables de entorno y define rutas y modelos usados por todo el sistema.
+
+Carga la GOOGLE_API_KEY desde variables de entorno, define las rutas base
+del proyecto (datos, indices vectoriales), los modelos de Gemini (LLM y
+embeddings) que usan todos los agentes, el diccionario de documentos por
+agente y el TOP_K de recuperacion.
 """
 
 import os
@@ -33,4 +37,4 @@ DOCUMENTOS = {
     "proceso_crm": DATA_DIR / "03_Proceso_Ventas_CRM.txt",
 }
 
-TOP_K = 3  
+TOP_K = 4
