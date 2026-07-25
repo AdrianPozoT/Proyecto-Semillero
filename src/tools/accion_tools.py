@@ -23,6 +23,7 @@ CAMPOS_OBLIGATORIOS: list[str] = []
 
 
 def _siguiente_id() -> str:
+    
     """Genera un ID incremental tipo OPP-0001.
 
     TODO: mismo patron que la practica (contar lineas no vacias del
@@ -40,6 +41,8 @@ def registrar_oportunidad(
     condicion_pago: str = "",
     monto_total: float = 0,
 ) -> str:
+
+
     """Registra una oportunidad de venta en el archivo de texto. Requiere
     TODOS los datos obligatorios; si falta alguno, NO registra y devuelve
     cuales faltan.
