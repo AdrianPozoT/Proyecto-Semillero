@@ -37,13 +37,13 @@ class ConsultaResponse(BaseModel):
 
 @app.post("/consultar", response_model=ConsultaResponse)
 def endpoint_consultar(payload: ConsultaRequest):
-    """TODO:
-    1. resultado = consultar(payload.pregunta, payload.thread_id)
-    2. texto = extraer_texto(resultado["messages"][-1].content)
-    3. thread_id_usado = ... (el que se uso o genero en consultar())
-    4. return ConsultaResponse(respuesta=texto, thread_id=thread_id_usado)
-    """
-    raise NotImplementedError
+    resultado = consultar(payload.pregunta, payload.thread_id)
+    texto = extraer_texto(resultado["messages"][-1].content)
+    thread_id_usado = resultado["thread_id"]    
+    return ConsultaResponse(
+        respuesta=texto, 
+        thread_id=thread_id_usado
+    )
 
 
 @app.get("/health")
