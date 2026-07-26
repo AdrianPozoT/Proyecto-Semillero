@@ -1,10 +1,12 @@
-.venv/
+backend/.venv/
+backend/.env
 __pycache__/
 *.pyc
-.env
-vectorstores/*/
-!vectorstores/*/.gitkeep
-registro_oportunidades.txt
+backend/vectorstores/*/
+!backend/vectorstores/*/.gitkeep
+backend/registro_oportunidades.txt
+backend/imagenes_historial.txt
+backend/data/imagenes_consultadas/
 recibo*.png
 .pytest_cache/
 README_INTERNO.md
