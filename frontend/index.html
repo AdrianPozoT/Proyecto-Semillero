@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patito S.A. - Mesa de Ayuda IA para Ventas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Patito S.A.</h1>
+            <p>Sistema inteligente de soporte para ventas</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- SECCIÓN 1: CONSULTAS RAG -->
+        <div class="section">
+            <h2 class="section-title">📋 Consultas RAG</h2>
+            <div class="search-card">
+                <div class="search-box">
+                    <input type="text" id="pregunta" placeholder="¿Cuál es el precio? ¿Qué descuentos? ¿Proceso CRM?"
+                        onkeypress="if(event.key === 'Enter') hacerPregunta()">
+                    <button class="btn btn-primary" onclick="hacerPregunta()">Consultar</button>
+                    <button class="btn" onclick="nuevaConversacion()"
+                        title="Inicia una conversación sin el historial anterior">🔄 Nueva conversación</button>
+                </div>
+            </div>
+
+            <div class="response-card" id="respuestaDiv">
+                <div class="response-empty">
+                    <p>Escribe una pregunta para comenzar...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: ANÁLISIS DE IMAGEN -->
+        <div class="section">
+            <h2 class="section-title">🖼️ Análisis de imagen</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label>Selecciona imagen de producto</label>
+                    <div class="file-upload" id="fileUpload">
+                        <p class="upload-icon">📤</p>
+                        <p class="upload-text">Arrastra tu imagen aquí o haz clic</p>
+                        <small>Formatos: JPG, PNG | Máximo 5MB</small>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                    <div id="previewImagen" class="image-preview" style="display: none;">
+                        <img id="previewImg" src="" alt="Preview">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>¿Qué quieres consultar de la imagen?</label>
+                    <textarea id="descriptionImagen"
+                        placeholder="Ej: Identifica el producto, extrae el precio, valida información..."
+                        rows="3"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="analizarImagen()">Analizar imagen</button>
+
+                <div class="response-card" id="imageResponseDiv" style="margin-top: 1.5rem; display: none;">
+                    <div class="response-active">
+                        <h3>Resultado del análisis</h3>
+                        <p id="imageResult"></p>
+                        <div class="response-meta">
+                            <strong>Imagen:</strong> <span id="imagenNombre"></span> |
+                            <strong>Guardada:</strong> <span id="imagenGuardada"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTORIAL DE IMÁGENES -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 1.5rem;">Historial de imágenes analizadas</h3>
+                <div id="imageHistorialDiv" class="historial-table">
+                    <div class="empty-state">No hay imágenes analizadas aún</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: OPORTUNIDADES REGISTRADAS -->
+        <div class="section">
+            <h2 class="section-title">💼 Oportunidades de Venta</h2>
+            <div class="opportunities-header">
+                <div>
+                    <p>Total: <strong id="totalOpportunidades">0</strong> oportunidades</p>
+                </div>
+                <button class="btn btn-primary" onclick="abrirFormulario()">+ Registrar Oportunidad</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="opp-table" id="opportunitiesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="opportunitiesBody">
+                        <tr>
+                            <td colspan="7" class="empty-table">No hay oportunidades registradas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: REGISTRAR OPORTUNIDAD -->
+    <div class="modal" id="formularioModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarFormulario()">✕</button>
+            <h3>Registrar nueva oportunidad</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 1rem;">
+                Solo se necesitan los datos básicos para crear la oportunidad. Los datos de cierre
+                (precio, descuento, orden de compra, etc.) se completan después, al marcarla como ganada.
+            </p>
+
+            <form onsubmit="registrarOportunidad(event)" id="formOportunidad">
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <input type="text" id="cliente" name="cliente" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Producto *</label>
+                    <select id="producto" name="producto" required>
+                        <option value="">Selecciona un producto...</option>
+                        <option value="Patito Pro 2026">Patito Pro 2026</option>
+                        <option value="Patito Pro Max 2026">Patito Pro Max 2026</option>
+                        <option value="Patito Lite 2026">Patito Lite 2026</option>
+                        <option value="Patito Lite Mini">Patito Lite Mini</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Cantidad *</label>
+                    <input type="number" id="cantidad" name="cantidad" min="1" value="1" required>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn" onclick="cerrarFormulario()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar oportunidad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CAMBIAR ESTADO -->
+    <div class="modal" id="cambiarEstadoModal">
+        <div class="modal-content" style="max-width: 480px;">
+            <button class="modal-close" onclick="cerrarModalEstado()">✕</button>
+            <h3>Cambiar estado de oportunidad</h3>
+
+            <div style="margin: 1.5rem 0;">
+                <p><strong>ID:</strong> <span id="oppIdDisplay"></span></p>
+                <p><strong>Cliente:</strong> <span id="oppClienteDisplay"></span></p>
+                <p><strong>Producto:</strong> <span id="oppProductoDisplay"></span></p>
+            </div>
+
+            <div class="form-group">
+                <label>Nuevo estado</label>
+                <select id="nuevoEstado" onchange="mostrarCamposCierre()">
+                    <option value="abierta">Abierta</option>
+                    <option value="ganada">Ganada</option>
+                    <option value="perdida">Perdida</option>
+                </select>
+            </div>
+
+            <!-- Campos de cierre, solo visibles si se elige "ganada" -->
+            <div id="camposCierre" style="display: none;">
+                <p style="font-size: 13px; color: var(--text-muted); margin: 1rem 0;">
+                    Para marcar como ganada, completa estos datos (sección 3 del Manual de Proceso de Ventas y CRM):
+                </p>
+
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="cierreCantidad" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Precio unitario (USD)</label>
+                    <input type="number" id="cierrePrecioUnitario" step="0.01" oninput="calcularMontoCierre()" readonly
+                        required>
+                    <small style="color: var(--text-muted); font-size: 12px;">Se consulta automáticamente del catálogo.
+                        Puedes ajustarlo si negociaste un precio distinto.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Descuento (%) *</label>
+                    <input type="number" id="cierreDescuento" min="0" max="30" step="0.1" value="0"
+                        oninput="calcularMontoCierre()" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Precio con descuento (calculado)</label>
+                    <input type="number" id="cierrePrecioDescuento" step="0.01" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Monto total (calculado)</label>
+                    <input type="number" id="cierreMontoTotal" step="0.01" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Condición de pago *</label>
+                    <select id="cierreCondicionPago" required>
+                        <option value="">Selecciona condición...</option>
+                        <option value="Contado">Contado</option>
+                        <option value="15 días">15 días</option>
+                        <option value="30 días">30 días</option>
+                        <option value="60 días">60 días</option>
+                        <option value="90 días">90 días</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Orden de compra *</label>
+                    <input type="text" id="cierreOrdenCompra" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Datos de facturación *</label>
+                    <input type="text" id="cierreDatosFacturacion" placeholder="NIT, RUC, etc." required>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de cierre *</label>
+                    <input type="date" id="cierreFechaCierre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de entrega *</label>
+                    <input type="date" id="cierreFechaEntrega" required>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" class="btn" onclick="cerrarModalEstado()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCambioEstado()">Actualizar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
