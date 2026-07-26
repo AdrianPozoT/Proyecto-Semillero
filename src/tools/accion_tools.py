@@ -15,17 +15,6 @@ from langchain.tools import tool
 REGISTRO_PATH = Path("registro_oportunidades.txt")
 
 
-<<<<<<< HEAD
-
-def _siguiente_id() -> str:
-    
-    """Genera un ID incremental tipo OPP-0001.
-
-    TODO: mismo patron que la practica (contar lineas no vacias del
-    archivo de registro y sumar 1).
-    """
-    raise NotImplementedError
-=======
 def _siguiente_id():
     """Genera ID incremental OPP-0001, OPP-0002, etc."""
     if not REGISTRO_PATH.exists():
@@ -34,7 +23,6 @@ def _siguiente_id():
         with open(REGISTRO_PATH, "r", encoding="utf-8") as f:
             n = sum(1 for linea in f if linea.strip())
     return f"OPP-{n + 1:04d}"
->>>>>>> 331e33c77a9b3896730468e9c66ccb515e4cb107
 
 
 @tool
@@ -50,22 +38,6 @@ def registrar_oportunidad(
     fecha_cierre: str = "",
     fecha_entrega: str = "",
 ) -> str:
-<<<<<<< HEAD
-
-
-    """Registra una oportunidad de venta en el archivo de texto. Requiere
-    TODOS los datos obligatorios; si falta alguno, NO registra y devuelve
-    cuales faltan.
-
-    TODO:
-    1. Revisar si esta firma de parametros cubre lo que pide el enunciado
-       (seccion 3.5 del caso practico) -- ajustala si falta algo.
-    2. Validar contra CAMPOS_OBLIGATORIOS.
-    3. Si falta algo: return "No se registro. Faltan datos: ..."
-    4. Si esta completo: generar id + timestamp, escribir la linea,
-       devolver confirmacion con el ID asignado.
-=======
->>>>>>> 331e33c77a9b3896730468e9c66ccb515e4cb107
     """
     Registra una oportunidad de venta en TXT.
     Requiere TODOS los datos obligatorios del CRM.

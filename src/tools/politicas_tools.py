@@ -1,11 +1,3 @@
-"""
-Tool de RAG para el dominio de politicas comerciales, descuentos y credito.
-Responsable: Pozo
-
-Mismo patron que catalogo_tools.py: retriever sobre la coleccion
-"politicas" -> contexto -> llm con reglas estrictas de no inventar.
-"""
-
 from langchain.tools import tool
 from langchain_chroma import Chroma
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
@@ -40,22 +32,47 @@ Reglas de respuesta:
 """
 
 
+def _aplanar_content(content) -> str:
+    """Gemini a veces devuelve content como lista de bloques
+    ({'type': 'text', 'text': ..., 'extras': {...}}) en vez de un
+    string plano. Aplanar antes de usarlo, para no incrustar el repr
+    crudo de la lista en la respuesta final (por ejemplo cuando esta
+    tool se invoca directamente desde main.py fuera del orquestador).
+    """
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        texto = ""
+        for bloque in content:
+            if isinstance(bloque, dict) and "text" in bloque:
+                texto += bloque["text"]
+            elif isinstance(bloque, str):
+                texto += bloque
+        return texto
+
+    return str(content)
+
+
 @tool
 def consultar_politicas(pregunta: str) -> str:
     """Responde preguntas sobre descuentos autorizados, condiciones de
     credito, garantias y devoluciones de Patito S.A."""
     docs = retriever.invoke(pregunta)
-    
+
     if not docs:
         return "No encontré información suficiente en la base documental proporcionada."
-    
+
     contexto = "\n\n".join(d.page_content for d in docs)
-    
+
     mensajes = [
         ("system", SYSTEM_PROMPT),
         ("user", f"CONTEXTO:\n{contexto}\n\nPREGUNTA: {pregunta}"),
     ]
-    
-    respuesta = llm.invoke(mensajes)
-    return respuesta.content
 
+    respuesta_llm = _aplanar_content(llm.invoke(mensajes).content)
+
+    secciones_unicas = set(d.metadata.get("seccion", "Desconocida") for d in docs)
+    texto_secciones = ", ".join(str(s) for s in secciones_unicas)
+
+    return f"{respuesta_llm}\n\n[Fuente: Políticas | Secciones: {texto_secciones}]"
