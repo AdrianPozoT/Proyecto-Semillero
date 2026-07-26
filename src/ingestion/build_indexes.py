@@ -1,10 +1,11 @@
 """
-Ingestion: lee cada documento, lo chunkea por seccion y genera su indice
-en Chroma con embeddings de Gemini.
+Script de ingestion: genera los indices vectoriales de los tres agentes
+de lectura (catalogo, politicas, proceso CRM).
 
-Responsable: Matias. Esto NO es logica nueva -- ya lo construyeron y
-probaron en la Fase 1 del proyecto. Aqui solo se porta a la nueva
-estructura de carpetas (src/ingestion/, vectorstores/<agente>/).
+Por cada documento, detecta sus secciones numeradas con una expresion
+regular, convierte cada seccion en un chunk completo, genera sus
+embeddings con Gemini y los guarda en un indice Chroma independiente
+por agente.
 """
 
 import re
@@ -32,13 +33,13 @@ def chunkear_por_seccion(texto: str) -> list[str]:
     return chunks
     
 
+
 def construir_indice(nombre_agente: str, ruta_documento) -> None:
     """Chunkea, embebe y guarda en Chroma el indice de un agente."""
     
     texto = ruta_documento.read_text(encoding="utf-8")
     chunks = chunkear_por_seccion(texto)
     embeddings = GoogleGenerativeAIEmbeddings(model=config.MODELO_EMBEDDING)
-
     metadatas = []
     for chunk in chunks:
         titulo_seccion = chunk.split("\n")[0].strip()
@@ -52,6 +53,7 @@ def construir_indice(nombre_agente: str, ruta_documento) -> None:
         persist_directory=str(config.VECTORSTORE_DIR / nombre_agente),
     )
     print(f"  -> {len(chunks)} chunks generados para '{nombre_agente}'.")
+    
 
 
 def main():
