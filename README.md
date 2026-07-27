@@ -1,5 +1,7 @@
 # Patito S.A. — Mesa de Ayuda IA para Ventas
 
+**[Ver video de demostración] https://drive.google.com/drive/folders/1muDIcKKTW7b6VFEqHYyRfwvRaT87gFdW?usp=sharing**
+
 Prototipo de mesa de ayuda con **agentes especializados LangChain + Google Gemini** para el Departamento de Ventas de Patito S.A. (datos ficticios).
 
 El usuario pregunta en lenguaje natural, un **agente orquestador** decide qué herramienta(s) invocar, y devuelve una respuesta consolidada, trazable y basada **únicamente** en la base documental entregada.
